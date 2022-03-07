@@ -8,13 +8,27 @@ class tree_node:
     to the left node and the right node, but a leaf node does not have any children.
     """
     
-    def __init__(self, center, split, leaf=False, left = None, right=None):
-        self.center = center
+    def __init__(self, col, split, leaf=False):
+        self.col = col
         self.split = split
-        if not leaf:
-            self.left = left
-            self.right = right
+        self.left = None
+        self.right = None
         return
+    def left_insert(self, left_col, left_split):
+        self.left = tree_node(left_col, left_split)
+        return
+    def right_insert(self, right_col, right_split):
+        self.right = tree_node(right_col, right_split)
+        return
+    def traverse(self, features):
+        if self.leaf==False:
+            if features[self.col]<= self.split:
+                self.left.traverse(features)
+            else:
+                self.right.traverse(features)
+        else:
+            print("Leaf reached!!!!!")
+
 
 class decisionTree:
     """
@@ -23,6 +37,7 @@ class decisionTree:
     hyper-parameters. 
     """
     def __init__(self, type="classification", max_depth = 10):
+        self.root = None
         self.type = type
         self.max_depth = max_depth
         return
@@ -66,7 +81,7 @@ class decisionTree:
                 best_split_col = best_split
         return best_col, best_split_col
             
-    def divide_data(self, features, labels, col, split):
+    def divide_data(self, features, col, split):
         leftGroup, rightGroup = [], []
         for i in range(len(features)):
             if features[i, col] <= split:
@@ -74,6 +89,21 @@ class decisionTree:
             else:
                 rightGroup.append(i)
         return leftGroup, rightGroup
+
+    def build_tree(self, features, labels):
+        root_col, root_split = self.best_split(features, labels)
+        self.root = tree_node(root_col, root_split)
+        leftGroup, rightGroup = self.divide_data(features, labels, root_col, root_split)
+        if self.gini_impurity(labels[leftGroup]) >= 0:
+            bleft_col, bleft_split = self.best_split(features[leftGroup], labels[leftGroup])
+            self.root.left_insert(bleft_col, bleft_split)
+        else:
+            self.root.left_insert(leaf=True)
+        if self.gini_impurity(labels[rightGroup]) >= 0:
+            bright_col, bright_split = self.best_split(features[rightGroup], labels[rightGroup])
+            self.root.right_insert(bright_col, bright_split)
+        else:
+            self.root.right_insert(leaf=True)
             
 
     def train(self, trainFeatures, trainLabels):
@@ -85,11 +115,6 @@ class decisionTree:
         self.trainLabels = trainLabels
         nrows, ncols = trainFeatures.shape
         if self.type == "classification":
-            while True:
-                best_col, best_split = self.best_split(trainFeatures, trainLabels)
-                leftGroup, rightGroup = self.divide_data(trainFeatures, trainLabels, best_col, best_split)
-                bleft_col, bleft_split = self.best_split(trainFeatures[leftGroup], trainLabels[leftGroup])
-                bright_col, bright_split = self.best_split(trainFeatures[rightGroup], trainLabels[rightGroup])
-                tree_node(best_col, best_split, left=bleft_col, right=bright_col)
+            self.build_tree(trainFeatures, trainLabels)
                     
             
