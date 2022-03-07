@@ -8,17 +8,19 @@ class tree_node:
     to the left node and the right node, but a leaf node does not have any children.
     """
     
-    def __init__(self, col, split, leaf=False):
+    def __init__(self, col=None, split=None, leaf=False, maj_class = None):
         self.col = col
         self.split = split
         self.left = None
         self.right = None
+        self.maj_class = maj_class
+        self.leaf = leaf
         return
-    def left_insert(self, left_col, left_split):
-        self.left = tree_node(left_col, left_split)
+    def left_insert(self, node, leaf=False):
+        self.left = node
         return
-    def right_insert(self, right_col, right_split):
-        self.right = tree_node(right_col, right_split)
+    def right_insert(self, node, leaf=False):
+        self.right = node
         return
     def traverse(self, features):
         if self.leaf==False:
@@ -27,7 +29,9 @@ class tree_node:
             else:
                 self.right.traverse(features)
         else:
+            print("Predicted class is : ", self.maj_class)
             print("Leaf reached!!!!!")
+            return self.maj_class
 
 
 class decisionTree:
@@ -39,6 +43,7 @@ class decisionTree:
     def __init__(self, type="classification", max_depth = 10):
         self.root = None
         self.type = type
+        self.depth = 0
         self.max_depth = max_depth
         return
 
@@ -63,11 +68,11 @@ class decisionTree:
         nrow, ncol = features.shape    
         best_score_col = math.inf
         best_col, best_split_col = None, None
+        best_split = None
+        best_score = math.inf
         for col in range(ncol):
             comb = np.column_stack((features[:, col], labels))
             comb = comb[np.argsort(comb[:, 0])]
-            best_split = None
-            best_score = math.inf
             for split_index in range(nrow):
                 s1 = self.gini_impurity(comb[:split_index, 1]) * split_index/nrow
                 s2 = self.gini_impurity(comb[split_index:, 1]) * (nrow - split_index)/nrow
@@ -91,30 +96,38 @@ class decisionTree:
         return leftGroup, rightGroup
 
     def build_tree(self, features, labels):
-        root_col, root_split = self.best_split(features, labels)
-        self.root = tree_node(root_col, root_split)
-        leftGroup, rightGroup = self.divide_data(features, labels, root_col, root_split)
-        if self.gini_impurity(labels[leftGroup]) >= 0:
-            bleft_col, bleft_split = self.best_split(features[leftGroup], labels[leftGroup])
-            self.root.left_insert(bleft_col, bleft_split)
+        root_col, root_split = self.find_split(features, labels)
+        root = tree_node(root_col, root_split)
+        self.depth += 1
+        leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
+        if self.gini_impurity(labels[leftGroup]) >= 0 and self.depth<=self.max_depth:
+            leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
+            root.left_insert(leftNode)
         else:
-            self.root.left_insert(leaf=True)
-        if self.gini_impurity(labels[rightGroup]) >= 0:
-            bright_col, bright_split = self.best_split(features[rightGroup], labels[rightGroup])
-            self.root.right_insert(bright_col, bright_split)
+            root.left_insert(tree_node(leaf=True, maj_class=labels[leftGroup][0]))
+        if self.gini_impurity(labels[rightGroup]) >= 0 and self.depth<=self.max_depth:
+            rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
+            root.right_insert(rightNode)
         else:
-            self.root.right_insert(leaf=True)
-            
+            root.right_insert(tree_node(leaf=True, maj_class=labels[leftGroup][0]))
+        return root            
 
     def train(self, trainFeatures, trainLabels):
         """
         This method trains a decision tree model given then training data. A decision tree 
         is nothing but a tree data structure.
         """
-        self.trainFeatures = trainFeatures
-        self.trainLabels = trainLabels
-        nrows, ncols = trainFeatures.shape
+
         if self.type == "classification":
-            self.build_tree(trainFeatures, trainLabels)
+            self.root = self.build_tree(trainFeatures, trainLabels)
+
+    def predict(self, features):
+        """
+        This method will predict the label for a set of features using the trained
+        Decision tree model.
+        """
+        pred = self.root.traverse(features)
+        return pred
+
                     
             
