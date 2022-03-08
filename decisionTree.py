@@ -28,9 +28,9 @@ class tree_node:
     def traverse(self, features):
         if self.leaf==False:
             if features[self.col]<= self.split:
-                self.left.traverse(features)
+                return self.left.traverse(features)
             else:
-                self.right.traverse(features)
+                return self.right.traverse(features)
         else:
             pred_class = self.classes[np.argmax(self.classes_count)]
             print("Predicted class is : ", pred_class, " with a probability of : ", self.classes_count.max()/self.classes_count.sum())
@@ -44,7 +44,7 @@ class decisionTree:
     creates a decision tree model depending on the type of model required and given set of 
     hyper-parameters. 
     """
-    def __init__(self, type="classification", max_depth = 10):
+    def __init__(self, type="classification", max_depth = 20):
         self.root = None
         self.type = type
         self.left_depth, self.right_depth = 0, 0
@@ -103,17 +103,15 @@ class decisionTree:
         root_col, root_split = self.find_split(features, labels)
         root = tree_node(root_col, root_split)
         leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
-        if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth:
+        if self.gini_impurity(labels[leftGroup]) >= 0.1 and self.left_depth<=self.max_depth:
             self.left_depth += 1
             leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
             root.left_insert(leftNode)
-            print("Left Condition entered")
         else:
             root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
-        if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth:
+        if self.gini_impurity(labels[rightGroup]) >= 0.1 and self.right_depth<=self.max_depth:
             self.right_depth += 1
             rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
-            print("Right Condition entered")
             root.right_insert(rightNode)
         else:
             root.right_insert(tree_node(leaf=True, classes_info=np.unique(labels[rightGroup], return_counts=True)))
