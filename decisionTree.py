@@ -8,12 +8,15 @@ class tree_node:
     to the left node and the right node, but a leaf node does not have any children.
     """
     
-    def __init__(self, col=None, split=None, leaf=False, maj_class = None):
+    def __init__(self, col=None, split=None, leaf=False, classes_info = None):
         self.col = col
         self.split = split
         self.left = None
         self.right = None
-        self.maj_class = maj_class
+        if classes_info != None:
+            self.classes, self.classes_count = classes_info
+        else:
+            self.classes, self.classes_count = None, None
         self.leaf = leaf
         return
     def left_insert(self, node, leaf=False):
@@ -29,9 +32,10 @@ class tree_node:
             else:
                 self.right.traverse(features)
         else:
-            print("Predicted class is : ", self.maj_class)
+            pred_class = self.classes[np.argmax(self.classes_count)]
+            print("Predicted class is : ", pred_class, " with a probability of : ", self.classes_count.max()/self.classes_count.sum())
             print("Leaf reached!!!!!")
-            return self.maj_class
+            return pred_class
 
 
 class decisionTree:
@@ -43,7 +47,7 @@ class decisionTree:
     def __init__(self, type="classification", max_depth = 10):
         self.root = None
         self.type = type
-        self.depth = 0
+        self.left_depth, self.right_depth = 0, 0
         self.max_depth = max_depth
         return
 
@@ -98,18 +102,21 @@ class decisionTree:
     def build_tree(self, features, labels):
         root_col, root_split = self.find_split(features, labels)
         root = tree_node(root_col, root_split)
-        self.depth += 1
         leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
-        if self.gini_impurity(labels[leftGroup]) >= 0 and self.depth<=self.max_depth:
+        if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth:
+            self.left_depth += 1
             leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
             root.left_insert(leftNode)
+            print("Left Condition entered")
         else:
-            root.left_insert(tree_node(leaf=True, maj_class=labels[leftGroup][0]))
-        if self.gini_impurity(labels[rightGroup]) >= 0 and self.depth<=self.max_depth:
+            root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
+        if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth:
+            self.right_depth += 1
             rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
+            print("Right Condition entered")
             root.right_insert(rightNode)
         else:
-            root.right_insert(tree_node(leaf=True, maj_class=labels[leftGroup][0]))
+            root.right_insert(tree_node(leaf=True, classes_info=np.unique(labels[rightGroup], return_counts=True)))
         return root            
 
     def train(self, trainFeatures, trainLabels):
