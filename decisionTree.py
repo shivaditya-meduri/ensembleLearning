@@ -1,41 +1,6 @@
 import numpy as np
 import math
-
-
-class tree_node:
-    """
-    A node can either be a normal node or a leaf node. A normal node has a connection
-    to the left node and the right node, but a leaf node does not have any children.
-    """
-    
-    def __init__(self, col=None, split=None, leaf=False, classes_info = None):
-        self.col = col
-        self.split = split
-        self.left = None
-        self.right = None
-        if classes_info != None:
-            self.classes, self.classes_count = classes_info
-        else:
-            self.classes, self.classes_count = None, None
-        self.leaf = leaf
-        return
-    def left_insert(self, node, leaf=False):
-        self.left = node
-        return
-    def right_insert(self, node, leaf=False):
-        self.right = node
-        return
-    def traverse(self, features):
-        if self.leaf==False:
-            if features[self.col]<= self.split:
-                return self.left.traverse(features)
-            else:
-                return self.right.traverse(features)
-        else:
-            pred_class = self.classes[np.argmax(self.classes_count)]
-            print("Predicted class is : ", pred_class, " with a probability of : ", self.classes_count.max()/self.classes_count.sum())
-            print("Leaf reached!!!!!")
-            return pred_class
+from tree_node import tree_node
 
 
 class decisionTree:
@@ -44,11 +9,12 @@ class decisionTree:
     creates a decision tree model depending on the type of model required and given set of 
     hyper-parameters. 
     """
-    def __init__(self, type="classification", max_depth = 20):
+    def __init__(self, type="classification", max_depth = 100, min_samples_leaf=1):
         self.root = None
         self.type = type
         self.left_depth, self.right_depth = 0, 0
         self.max_depth = max_depth
+        self.min_samples_leaf = min_samples_leaf
         return
 
     def gini_impurity(self, group):
@@ -103,13 +69,13 @@ class decisionTree:
         root_col, root_split = self.find_split(features, labels)
         root = tree_node(root_col, root_split)
         leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
-        if self.gini_impurity(labels[leftGroup]) >= 0.1 and self.left_depth<=self.max_depth:
+        if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
             self.left_depth += 1
             leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
             root.left_insert(leftNode)
         else:
             root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
-        if self.gini_impurity(labels[rightGroup]) >= 0.1 and self.right_depth<=self.max_depth:
+        if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
             self.right_depth += 1
             rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
             root.right_insert(rightNode)
@@ -131,8 +97,14 @@ class decisionTree:
         This method will predict the label for a set of features using the trained
         Decision tree model.
         """
-        pred = self.root.traverse(features)
-        return pred
+        if len(features.shape) == 1:
+            pred, prob = self.root.traverse(features)
+        elif len(features.shape) == 2:
+            pred, prob = [], []
+            for i in range(len(features)):
+                pred.append(self.root.traverse(features[i])[0])
+                prob.append(self.root.traverse(features[i])[1])
+        return pred, prob
 
                     
             
