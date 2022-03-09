@@ -17,10 +17,12 @@ class randomForest:
         self.dts = []
         return
     def sample(self, features, labels):
+        #sampling is done randomely from the set of features with repetitions where 50% of the data set is sampled
         l = features.shape[0]
         select = random.sample(range(l), int(0.5*l))
         return features[select], labels[select]
     def train(self, features, labels):
+        #this method creates n_trees number of base estimators which are trained on the bag set of features after which the majority class is marqued as the prediction
         for i in range(self.n_trees):
             tree = decisionTree(type = self.type, max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf)
             f1, l1 = self.sample(features, labels)
