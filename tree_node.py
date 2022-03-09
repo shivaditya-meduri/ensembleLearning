@@ -26,7 +26,7 @@ class tree_node:
         return
     def traverse(self, features):
         if self.leaf==False:
-            if features[self.col]<= self.split:
+            if features[self.col]< self.split:
                 return self.left.traverse(features)
             else:
                 return self.right.traverse(features)
@@ -36,6 +36,6 @@ class tree_node:
                 pred_prob = self.classes_count.max()/self.classes_count.sum()
                 #print("Predicted class is : ", pred_class, " with a probability of : ", pred_prob)
                 #print("Leaf reached!!!!!")
-                return pred_class, pred_prob
+                return pred_class
             else:
                 return self.reg_avg

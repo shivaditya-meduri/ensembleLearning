@@ -9,7 +9,7 @@ class decisionTree:
     creates a decision tree model depending on the type of model required and given set of 
     hyper-parameters. 
     """
-    def __init__(self, type="classification", max_depth = 100, min_samples_leaf=1):
+    def __init__(self, type="classification", max_depth = 100, min_samples_leaf=10):
         self.root = None
         self.type = type
         self.left_depth, self.right_depth = 0, 0
@@ -64,8 +64,8 @@ class decisionTree:
                     s1 = self.gini_impurity(comb[:split_index, 1]) * split_index/nrow
                     s2 = self.gini_impurity(comb[split_index:, 1]) * (nrow - split_index)/nrow
                 else:
-                    s1 = self.cart_cost_reg(comb[:split_index, 1]) * split_index/nrow
-                    s2 = self.cart_cost_reg(comb[split_index:, 1]) * (nrow - split_index)/nrow       
+                    s1 = self.cart_cost_reg(comb[:split_index, 1])
+                    s2 = self.cart_cost_reg(comb[split_index:, 1])       
                 wg = s1 + s2
                 if wg < best_score:
                     best_split = comb[split_index, 0]
@@ -79,7 +79,7 @@ class decisionTree:
     def divide_data(self, features, col, split):
         leftGroup, rightGroup = [], []
         for i in range(len(features)):
-            if features[i, col] <= split:
+            if features[i, col] < split:
                 leftGroup.append(i)
             else:
                 rightGroup.append(i)
