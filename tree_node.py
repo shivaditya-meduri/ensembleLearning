@@ -6,11 +6,12 @@ class tree_node:
     to the left node and the right node, but a leaf node does not have any children.
     """
     
-    def __init__(self, col=None, split=None, leaf=False, classes_info = None):
+    def __init__(self, col=None, split=None, leaf=False, classes_info = None, reg_avg=None):
         self.col = col
         self.split = split
         self.left = None
         self.right = None
+        self.reg_avg = reg_avg
         if classes_info != None:
             self.classes, self.classes_count = classes_info
         else:
@@ -30,8 +31,11 @@ class tree_node:
             else:
                 return self.right.traverse(features)
         else:
-            pred_class = self.classes[np.argmax(self.classes_count)]
-            pred_prob = self.classes_count.max()/self.classes_count.sum()
-            #print("Predicted class is : ", pred_class, " with a probability of : ", pred_prob)
-            #print("Leaf reached!!!!!")
-            return pred_class, pred_prob
+            if self.reg_avg == None:
+                pred_class = self.classes[np.argmax(self.classes_count)]
+                pred_prob = self.classes_count.max()/self.classes_count.sum()
+                #print("Predicted class is : ", pred_class, " with a probability of : ", pred_prob)
+                #print("Leaf reached!!!!!")
+                return pred_class, pred_prob
+            else:
+                return self.reg_avg

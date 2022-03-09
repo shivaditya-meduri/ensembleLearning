@@ -29,6 +29,22 @@ class decisionTree:
             p += (counts[i]/n)**2
         return 1-p
 
+
+    def cart_cost_reg(self, group):
+        """
+        This function calculates the CART cost function of a set of points split
+        using a column and split-value. This function is used to calculate the best_col
+        and the best_split to build the decision tree regressor model. Essentially
+        the cost function is the variance. 
+        """
+        n = len(group)
+        if n>1:
+            var = group.var()
+        else:
+            var = 0
+        return var*n
+
+
     def find_split(self, features, labels):
         """
         This method will find the best feature that splits the given dataset
@@ -44,8 +60,12 @@ class decisionTree:
             comb = np.column_stack((features[:, col], labels))
             comb = comb[np.argsort(comb[:, 0])]
             for split_index in range(nrow):
-                s1 = self.gini_impurity(comb[:split_index, 1]) * split_index/nrow
-                s2 = self.gini_impurity(comb[split_index:, 1]) * (nrow - split_index)/nrow
+                if self.type == "classification":
+                    s1 = self.gini_impurity(comb[:split_index, 1]) * split_index/nrow
+                    s2 = self.gini_impurity(comb[split_index:, 1]) * (nrow - split_index)/nrow
+                else:
+                    s1 = self.cart_cost_reg(comb[:split_index, 1]) * split_index/nrow
+                    s2 = self.cart_cost_reg(comb[split_index:, 1]) * (nrow - split_index)/nrow       
                 wg = s1 + s2
                 if wg < best_score:
                     best_split = comb[split_index, 0]
@@ -69,18 +89,32 @@ class decisionTree:
         root_col, root_split = self.find_split(features, labels)
         root = tree_node(root_col, root_split)
         leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
-        if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
-            self.left_depth += 1
-            leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
-            root.left_insert(leftNode)
-        else:
-            root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
-        if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
-            self.right_depth += 1
-            rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
-            root.right_insert(rightNode)
-        else:
-            root.right_insert(tree_node(leaf=True, classes_info=np.unique(labels[rightGroup], return_counts=True)))
+        if self.type == "classification":
+            if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
+                self.left_depth += 1
+                leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
+                root.left_insert(leftNode)
+            else:
+                root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
+            if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
+                self.right_depth += 1
+                rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
+                root.right_insert(rightNode)
+            else:
+                root.right_insert(tree_node(leaf=True, classes_info=np.unique(labels[rightGroup], return_counts=True)))
+        elif self.type == "regression":
+            if self.cart_cost_reg(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
+                self.left_depth += 1
+                leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
+                root.left_insert(leftNode)
+            else:
+                root.left_insert(tree_node(leaf=True, reg_avg=labels[leftGroup].mean()))
+            if self.cart_cost_reg(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
+                self.right_depth += 1
+                rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
+                root.right_insert(rightNode)
+            else:
+                root.right_insert(tree_node(leaf=True, reg_avg=labels[rightGroup].mean()))
         return root            
 
     def train(self, trainFeatures, trainLabels):
@@ -88,9 +122,7 @@ class decisionTree:
         This method trains a decision tree model given then training data. A decision tree 
         is nothing but a tree data structure.
         """
-
-        if self.type == "classification":
-            self.root = self.build_tree(trainFeatures, trainLabels)
+        self.root = self.build_tree(trainFeatures, trainLabels)
 
     def predict(self, features):
         """
@@ -98,13 +130,12 @@ class decisionTree:
         Decision tree model.
         """
         if len(features.shape) == 1:
-            pred, prob = self.root.traverse(features)
+            pred = self.root.traverse(features)
         elif len(features.shape) == 2:
-            pred, prob = [], []
+            pred = []
             for i in range(len(features)):
-                pred.append(self.root.traverse(features[i])[0])
-                prob.append(self.root.traverse(features[i])[1])
-        return pred, prob
+                pred.append(self.root.traverse(features[i]))
+        return pred
 
                     
             
