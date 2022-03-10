@@ -103,20 +103,24 @@ class decisionTree:
             else:
                 root.right_insert(tree_node(leaf=True, classes_info=np.unique(labels[rightGroup], return_counts=True)))
         elif self.type == "regression":
-            if self.cart_cost_reg(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
+            if self.cart_cost_reg(labels[leftGroup]) >= 0.05 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
                 self.left_depth += 1
                 leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
                 root.left_insert(leftNode)
             else:
                 if len(labels[leftGroup]) != 0:
                     root.left_insert(tree_node(leaf=True, reg_avg=labels[leftGroup].mean()))
-            if self.cart_cost_reg(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
+                else:
+                    root.left_insert(tree_node(leaf=True, reg_avg=labels.mean()))
+            if self.cart_cost_reg(labels[rightGroup]) >= 0.05 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
                 self.right_depth += 1
                 rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
                 root.right_insert(rightNode)
             else:
                 if len(labels[rightGroup]) != 0:
                     root.right_insert(tree_node(leaf=True, reg_avg=labels[rightGroup].mean()))
+                else:
+                    root.right_insert(tree_node(leaf=True, reg_avg=labels.mean()))
         return root            
 
     def train(self, trainFeatures, trainLabels):

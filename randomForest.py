@@ -17,7 +17,7 @@ class randomForest:
         self.dts = []
         return
     def sample(self, features, labels):
-        #sampling is done randomely from the set of features with repetitions where 50% of the data set is sampled
+        #sampling is done randomely from the set of features where 50% of the data set is sampled
         l = features.shape[0]
         select = random.sample(range(l), int(0.5*l))
         return features[select], labels[select]
@@ -40,9 +40,26 @@ class randomForest:
             p.append(prediction)
         return p
 
+    def avg_preds(self, preds):
+        """
+        In Random Forest Regressor, instead of majority voting of predictions of the base regressor,
+        an average of all the predictions is taken. This method takes the average of all the predictions of the
+        base regressors and outputs the prediction of the ensemble
+        """
+        p = []
+        for i in range(len(preds[0])):
+            regs = []
+            for j in range(self.n_trees):
+                regs.append(preds[j][i])
+            p.append(sum(regs)/len(regs))
+        return p
+
     def predict(self, features):
         preds = []
         for i in range(self.n_trees):
             preds.append(self.dts[i].predict(features))
-        pred = self.voting(preds)
+        if self.type == "regression":
+            pred = self.avg_preds(preds)
+        else:
+            pred = self.voting(preds)
         return pred
