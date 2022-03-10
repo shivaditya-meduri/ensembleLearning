@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from tree_node import tree_node
+from src.tree_node import tree_node
 
 
 class decisionTree:

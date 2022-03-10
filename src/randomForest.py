@@ -1,4 +1,4 @@
-from decisionTree import decisionTree
+from src.decisionTree import decisionTree
 import numpy as np
 import random
 
