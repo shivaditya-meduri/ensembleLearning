@@ -37,7 +37,6 @@ class randomForest:
                 votes.append(preds[j][i])
             pred_classes, pred_counts = np.unique(votes, return_counts=True)
             prediction = pred_classes[np.argmax(pred_counts)]
-            print(prediction)
             p.append(prediction)
         return p
 

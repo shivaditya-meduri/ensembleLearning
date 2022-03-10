@@ -90,13 +90,13 @@ class decisionTree:
         root = tree_node(root_col, root_split)
         leftGroup, rightGroup = self.divide_data(features, root_col, root_split)
         if self.type == "classification":
-            if self.gini_impurity(labels[leftGroup]) >= 0 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
+            if self.gini_impurity(labels[leftGroup]) >= 0.05 and self.left_depth<=self.max_depth and len(leftGroup)>=self.min_samples_leaf:
                 self.left_depth += 1
                 leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
                 root.left_insert(leftNode)
             else:
                 root.left_insert(tree_node(leaf=True, classes_info=np.unique(labels[leftGroup], return_counts=True)))
-            if self.gini_impurity(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
+            if self.gini_impurity(labels[rightGroup]) >= 0.05 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
                 self.right_depth += 1
                 rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
                 root.right_insert(rightNode)
@@ -108,13 +108,15 @@ class decisionTree:
                 leftNode = self.build_tree(features[leftGroup], labels[leftGroup])
                 root.left_insert(leftNode)
             else:
-                root.left_insert(tree_node(leaf=True, reg_avg=labels[leftGroup].mean()))
+                if len(labels[leftGroup]) != 0:
+                    root.left_insert(tree_node(leaf=True, reg_avg=labels[leftGroup].mean()))
             if self.cart_cost_reg(labels[rightGroup]) >= 0 and self.right_depth<=self.max_depth and len(rightGroup)>=self.min_samples_leaf:
                 self.right_depth += 1
                 rightNode = self.build_tree(features[rightGroup], labels[rightGroup])
                 root.right_insert(rightNode)
             else:
-                root.right_insert(tree_node(leaf=True, reg_avg=labels[rightGroup].mean()))
+                if len(labels[rightGroup]) != 0:
+                    root.right_insert(tree_node(leaf=True, reg_avg=labels[rightGroup].mean()))
         return root            
 
     def train(self, trainFeatures, trainLabels):

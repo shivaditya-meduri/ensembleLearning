@@ -32,8 +32,11 @@ class tree_node:
                 return self.right.traverse(features)
         else:
             if self.reg_avg == None:
-                pred_class = self.classes[np.argmax(self.classes_count)]
-                pred_prob = self.classes_count.max()/self.classes_count.sum()
+                if len(self.classes_count) != 0:
+                    pred_class = self.classes[np.argmax(self.classes_count)]
+                else:
+                    pred_class = "None"
+                #pred_prob = self.classes_count.max()/self.classes_count.sum()
                 #print("Predicted class is : ", pred_class, " with a probability of : ", pred_prob)
                 #print("Leaf reached!!!!!")
                 return pred_class
