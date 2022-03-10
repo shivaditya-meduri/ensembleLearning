@@ -1,4 +1,4 @@
-from src.decisionTree import decisionTree
+from ensembleLearning.src.decisionTree import decisionTree
 import numpy as np
 import random
 
