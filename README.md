@@ -1,8 +1,7 @@
 # Ensemble Learning
 An implementation of Decision tree and Random Forest models for classification and regression tasks from scratch. A few sample datasets like Iris, Breast cancer and Boston Housing dataset are also included in the repo for testing purposes. 
-<br />
-![image](https://user-images.githubusercontent.com/77324692/157775726-de4e956d-00d3-469c-aa2c-6befb6607cb7.png)
-<br />
+## 
+![image](https://user-images.githubusercontent.com/77324692/157776419-4f68e305-b304-45df-baef-9591b54bdcc7.png)
 ### Decision Tree
 Decision tree divides the feature space into hyper rectangles, which minimize the impurity/variance of the labels in the resulting hyper rectangles. In this implementation, this mechanism is replicated using the binary tree data structure, and the regions/hyper-rectangles are represented by leaf nodes in the tree. 
 For classification, the majority label of samples in the leaf node is chosen as the final prediction and for regression, the average of the labels of the samples in the leaf node is chosen as the final prediction.
