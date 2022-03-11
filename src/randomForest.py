@@ -16,6 +16,15 @@ class randomForest:
         self.min_samples_leaf = min_samples_leaf
         self.dts = []
         return
+    def description(self):
+        """
+        Returns class attributes.
+        """
+        print("This Random Forest object has ", self.n_trees, " trees")
+        if len(self.dts) == 0:
+            print("This Random Forest object has not been trained.")
+        else:
+            print("This Random Forest object not been trained.")    
     def sample(self, features, labels):
         #sampling is done randomely from the set of features where 50% of the data set is sampled
         l = features.shape[0]
