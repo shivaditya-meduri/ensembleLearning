@@ -15,7 +15,7 @@ To learn how to implement the models created in this repo, check out the tutoria
 ### Results of testing various datasets:
 ![image](https://user-images.githubusercontent.com/77324692/157776016-ac08becd-3df2-4f26-92c7-bd169ce1ff13.png)
 ### Notes
-The models impelemented for this project are not optimized for computational efficiency and take a lot of
+The models implemented for this project are not optimized for computational efficiency and take a lot of
 time for training. In order to speed of computation, paralell processing can be employed, for example to
 train each of the individual base estimators in the Random Forest model, we can assign the tasks to multiple
 processors as they are independent processes. Also additional hyper-parameters can be added to the models
