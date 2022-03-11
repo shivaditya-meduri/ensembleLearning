@@ -30,6 +30,11 @@ class randomForest:
             self.dts.append(tree)
         return
     def voting(self, preds):
+        """
+        In this function for a feature set, initially prediction is made by all the base estimators.
+        After the predictions have been made, a voting is conducted to find a class which has been predicted the most number of times. This class
+        is produced as the final class by the function.
+        """
         p = []
         for i in range(len(preds[0])):
             votes = []
