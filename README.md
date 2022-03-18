@@ -20,3 +20,5 @@ time for training. In order to speed of computation, paralell processing can be 
 train each of the individual base estimators in the Random Forest model, we can assign the tasks to multiple
 processors as they are independent processes. Also additional hyper-parameters can be added to the models
 for tuning for higher performance and flexibility
+
+Video explanation : https://drive.google.com/file/d/1K7jlJ0__fCouihY8uBvrHh1_XOltPsys/view?usp=sharing
